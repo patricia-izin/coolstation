@@ -40,11 +40,11 @@ img, a img {
 	position: relative;
 	display: inline-block;
 	width: 12em;
-	padding: 0.25em 0.5em;
-	border-radius: 5px;
+	padding: 10px 10px;
 	margin: 0.5em;
-	background: #555;
-	box-shadow: 3px 3px 0 2px #000;
+	background: #3b3122;
+	border-style: groove;
+	border-color: #6d6617;
 	}
 
 .queue {
