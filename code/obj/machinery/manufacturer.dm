@@ -127,6 +127,12 @@
 	//We'll probably have to handle having multiple appendices the moment there's more than one type, but not now. uwu
 	var/obj/machinery/manufacturer_attachment/appendix = null
 
+#define PC_BROWSER_RESOURCE(x) resource(x, null)
+#define PC_CSS_TAGGER(x) ("<link rel=\"stylesheet\" href=\"" + x + "\">")
+#define PC_CSS_RESOURCE(x) PC_BROWSER_RESOURCE(x + ".css\">")
+#define PC_CHUI_CSS(x) PC_CSS_RESOURCE(x + "-chui")
+#define PC_UNSTYLED_CSS(x) PC_CSS_RESOURCE(x + "-html")
+#define PC_USER_PREF_CSS(x) (user.client && !user.client.use_chui) ? PC_CSS_TAGGER(PC_UNSTYLED_CSS(x)) : PC_CSS_TAGGER(PC_CHUI_CSS(x))
 
 
 #define WIRE_EXTEND 1
@@ -319,7 +325,19 @@
 		//Main screen
 		src.add_dialog(user)
 
-		PC_LOAD(manufacturer, mainscreen)
+		var/HTML = {"
+		<title>[src.name]</title>
+
+		<script type="text/javascript">
+			function product(ref) {
+				window.location = "?src=\ref[src];disp=" + ref;
+			}
+
+			function delete_product(ref) {
+				window.location = "?src=\ref[src];delete=1;disp=" + ref;
+			}
+		</script>
+		"}
 
 		mainscreen.tags["title"] += src.name
 
@@ -458,8 +476,10 @@
 
 		mainscreen.tags["control-panel"] += build_control_panel(user)
 
-		PC_RENDER(mainscreen)
-		PC_BROWSE(mainscreen)
+		dat += build_control_panel(user)
+
+
+		user.Browse(HTML + dat.Join(), "window=manufact;size=1111x600;precontent=[PC_USER_PREF_CSS("css/chui/manufacturer/manufacturer")]")
 		onclose(user, "manufact")
 
 		interact_particle(user,src)
