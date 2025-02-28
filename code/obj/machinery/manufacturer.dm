@@ -320,20 +320,33 @@
 		src.add_dialog(user)
 
 		var/HTML = {"
-		<title>[src.name]</title>
+
+		<title>[PC_TAG("title")]</title>
 
 		<script type="text/javascript">
 			function product(ref) {
-				window.location = "?src=\ref[src];disp=" + ref;
+				window.location = "?src=[PC_REFTAG];disp=" + ref;
 			}
 
 			function delete_product(ref) {
-				window.location = "?src=\ref[src];delete=1;disp=" + ref;
+				window.location = "?src=[PC_REFTAG];delete=1;disp=" + ref;
 			}
 		</script>
+
+		<div id='products'>
+		[PC_TAG("products")]
+		</div><div id='info'>
+		[PC_TAG("mat-list")]
+		<A href='byond://?src=[PC_REFTAG];search=1'>(Search: \"[PC_TAG("search")]\")</A><BR>
+		<A href='byond://?src=[PC_REFTAG];category=1'>(Filter: \"[PC_TAG("search-category")]\")</A>
+		<!-- This is not re-formatted yet just b/c i don't wanna mess with it*/ -->
+		<HR><B>Scanned Card:</B> <A href='byond://?src=[PC_REFTAG];card=1'>([PC_TAG("scan")])</A><BR>
+		[PC_IFDEF("account")]
+			<B>Current Funds</B>: [PC_TAG("account")] Credits<br>
+		[PC_ENDIF("account")]
 		"}
 
-		mainscreen.tags["title"] += src.name
+		var/contentlist = list("title" = src.name)
 
 		var/list/dat = list()
 		var/delete_allowed = src.allowed(usr)
@@ -432,7 +445,7 @@
 				<span class='mat[mats_used[A.item_paths[i]] ? "" : "-missing"]'>[A.item_amounts[i]] [mat_name]</span>
 				"}
 
-			mainscreen.tags["products"] += {"
+			contentlist["products"] += {"
 		<div class='product[can_be_made ? "" : " disabled"]' onclick='product("\ref[A]");'>
 			<strong>[A.name]</strong>
 			<div class='required'><div>[material_text.Join("<br>")]</div></div>
@@ -443,19 +456,20 @@
 		</div>"}
 
 
-		mainscreen.tags["mat-list"] += build_material_list(user)
+		contentlist["mat-list"] += build_material_list(user)
 		//Search
-		mainscreen.tags["search"] += istext(src.search) ? html_encode(src.search) : "----"
-		mainscreen.tags["search-category"] += istext(src.category) ? html_encode(src.category) : "----"
+		contentlist["search"] += istext(src.search) ? html_encode(src.search) : "----"
+		contentlist["search-category"] += istext(src.category) ? html_encode(src.category) : "----"
 		// This is not re-formatted yet just b/c i don't wanna mess with it
-		mainscreen.tags["scan"] = src.scan
+		contentlist["scan"] = src.scan
 		if(scan)
 			var/datum/data/record/account = null
 			account = FindBankAccountById(src.scan.registered_id)
 			if (account)
-				PC_ENABLE_IFDEF(mainscreen, "account")
-				mainscreen.tags["account"] += account.fields["current_money"]
-
+				PC_ENABLE_IFDEF(HTML, "account")
+				contentlist["account"] += account.fields["current_money"]
+		dat+= src.temp
+		dat += "<HR><B>Ores Available for Purchase:</B><br><small>"
 		for_by_tcl(S, /obj/machinery/ore_cloud_storage_container)
 			if(S.broken)
 				continue
@@ -472,7 +486,8 @@
 
 		dat += build_control_panel(user)
 
-
+		PC_REMOVE_UNUSED_IFDEF(HTML)
+		PC_FILL_TAG_LIST(HTML, contentlist)
 		user.Browse(HTML + dat.Join(), "window=manufact;size=1111x600;precontent=[PC_USER_PREF_CSS("css/chui/manufacturer/manufacturer")]")
 		onclose(user, "manufact")
 
