@@ -155,7 +155,6 @@ chui/window
 		window.addEventListener("scroll", updateScroll);
 		window.addEventListener("load", function() {document.documentElement.scrollTop = document.body.scrollTop = window.name;});
 	</script>
-	[precontent]
 </head>
 <body>
 "} + body
@@ -182,7 +181,7 @@ chui/window
 
 		// use_chui_custom_frames allows enabling the standard Windows UI,
 		// which allows people an out if chui decides to go berzerk
-		var/list/built = list( "js" = list(), "css" = list(), "title" = (title || ""), data = datah, "precontent" = precontent )//todo, better this.
+		var/list/built = list( "js" = list(), "css" = list(), "title" = (title || ""), data = datah, "headerhtml" = headerhtml )//todo, better this.
 		who << browse( theme.generateHeader(built) + theme.generateBody( body, built ) + theme.generateFooter(), who.use_chui_custom_frames ? "titlebar=0;can_close=0;can_resize=0;can_scroll=0;border=0;[options]" : "titlebar=1;can_close=1;can_resize=1;can_scroll=1;border=1;[options]")
 		//winset( who, "\ref[src]", "on-close=\".chui-close \ref[src]\"" )
 		//theme.streamToClient( who )
